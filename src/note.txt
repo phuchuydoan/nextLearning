@@ -1,0 +1,250 @@
+URL: 
+    địa chỉ website dùng để truy cập trên trình duyệt (https://interdata.vn/blog/seo-la-gi/)
+    bao gồm scheme (ví dụ https), domain (interdata.vn), và path
+
+Path (Đường dẫn):
+    Là phần của URL đứng sau domain, dùng để xác định tài nguyên cụ thể đàng được yêu cầu
+    (/blog/seo-la-gi/)
+    Được tạo thành từ 1 hoặc segments
+
+Route (Tuyến đường):
+    Trong nextjs, một route là 1 đường dẫn (path) trong ứng dụng mà người dùng có thể truy cập
+    Nó được định nghĩa bởi cấu trúc thư mục bên trong thư mục app và các file page.js
+
+Segment (Phân đoạn route):
+    Mỗi phần của URL path được ngăn cách bởi dấu gạch chéo (/) là 1 segment
+    Ví dụ: trong path /dashboard/settings/profile
+          - dashboard là 1 segment
+          - settings là 1 segment
+          - profile là 1 segment
+    => Trong app route, mỗi thư mục bên trong folder app tương ứng với 1 segment trong URL
+    Ví dụ:
+        app/about => segment là about
+        app/about/hehe => segment là hehe
+
+
+import { useRouter } from "next/navigation";
+
+- router.push('/path'): điều hướng đến 1 route mới và thêm 1 entry vào history stack của trình duyệt
+  (người dùng có thể click nút back để về trang trước đó)
+
+- router.replace('path'): điều hướng đến 1 route mới nhưng thay thế entry hiện tại trong history stack  
+  (người dùng không thể back về trang vừa rời đi)
+
+- router.back(): quay lại trang trước đó trong history
+
+- router.forward(): đi tới trang tiếp theo trong history
+
+- router.refresh(): làm mới route hiện tại. Nextjs sẽ refetch lại dữ liệu cho server component
+  và re-render các Client component bị ảnh hưởng mà không làm mất state của các client component 
+  không liên quan.
+
+
+
+generateStaticParams
+
+
+Server component: hoàn toàn được render phía server. Kết quả render sẽ được gửi xuống client 
+      (HTML hoặc là 1 định dạng đặc biệt được gọi RSC payload)
+                  Trong app router, thì mặc định tất cả component đều là server component.
+
+    Đặc điểm: 
+        + chạy trên server, không gửi javascript xuống frontend 
+          (trừ khi nó render các client component con ở bên trong nó)
+        + Không có state, không có lifecycle (vì chúng chỉ render 1 lần từ server cho mỗi request)
+        + có thể async/await trực tiếp (ví dụ fetching data)
+        + an toàn để chứa các logic nghiệp vụ nhạy cảm (ví dụ như truy vấn trực tiếp vào DB) vì code không
+          được gửi xuống frontend
+        + không sử dụng được các hook của react (useState, useEffect,...)
+        + Không thể sử dụng các apis của trình duyệt (window, localstorage, ...)
+        + khônng thể sử dụng các event handlers (onClick, onChange)
+
+    Khi nào nên sử dụng: 
+        + render dữ liệu trực tiếp từ backend ngay trên server để phục vụ SEO
+        + truy cập trực tiếp vào tài nguyên backend nhạy cảm (database, filesystems) và không muốn để 
+            cho frontend biết
+        + Hiển thị nội dung tĩnh hoặc là nội dung ít thay đổi dựa trên tương tác người dùng
+        + giữ các dependency lớn ở phía server mà không muốn gửi xuống client
+        + tối ưu hoá bundle size và peformance
+
+Client component: là React component được render dưới trình duyệt (sau quá trình hydration).
+                Có thẻ tương các sự kiện (event handlers) và quản lý state phía client
+
+        - hydration là gì?: là quá trình làm cho HTML tĩnh đã được render trước bên phía server 
+                          trở nên có thể tương tác được:
+            + server render và gửi HTML tĩnh về trình duyệt => user thấy giao diện ngay
+            + Dưới trình duyệt (client), react bắt đầu quá trình hydrate bằng cách gán các event listeners
+                vào các phần tử HTML (DOM elements)
+            + => lúc này HTML tĩnh có thể tương tác được trong ứng dung react
+      
+      Đặc điểm:
+          + Đánh dấu bằng "use client" ở phía đầu file (Để phân biệt CC và SC)
+          + Được render trên phía server (pre-render) và sau đó hydrate dưới client
+          + javascript của component này được gửi xuống client
+          + có thể sử dụng state (useState), lifecycle effects (useEffect), và các hook khác của React
+          + Có thể sử dụng các API của trình duyệt (localstorage, window, document.querySelector(),...)
+          + Có thể sử dụng event handlers
+
+      Khi nào nên sử dụng:
+          + Có hỗ trợ tương tác người dùng (onClick, nhập form)
+          + quản lý state bên phía client
+          + dùng lifecycle
+          + sử dụng apis của trình duyệt
+          + sử dụng react hook, React context hoặc các thư viện quản lý state (redux)
+
+
+Lợi ích của mô hình SC & CC:
+  + hiệu suất: giảm lượng javascript gửi xuống client, cải thiệnt hời gian lúc load trang
+              đến khi user tương tác được
+  + await/async trực tiếp trong server component để fetching data
+  + tối ưu hoá hơn: chỉ gửi code xuống client khi cần tương tác
+
+
+//ClientCOmponent.js
+exprot default function ClientComponent ({ children }) {
+    return (
+        <div>
+            <p>Client component</p>
+            {children}
+        </div>
+    )
+}
+
+
+//ServerComponent.js
+import ClientComponent from './ClientComponent'
+import AnotherServerComponent from './AnotherServerComponent'
+
+exprot default function ServerComponent () {
+    return (
+        <ClientComponent>
+            <AnotherServerComponent />
+        </ClientComponent>
+    )
+}
+
+
+Khái niệm serializable
+- dữ liệu có thể được chuyển đổi tahfnh1  định dạng mà có thể dễ dàng để lưu trữ
+hoặc truyền qua mạng (ví dụ như dạng chuỗi hoặc dạng json) và sau đó có thể được tái tạo
+lại ở phía nhận mà không cần thông tin hay cấu trúc
+
+trong js có 2 kiểu dữ liệu được coi là serial bao gồm
+    + kiểu nguyên thuỷ (primitives): string, number, boolean, null
+    + kiểu dữ liệu phức tạp: array, object
+
+Những dữ liệu không seral trực tiếpp (hoặc cần xử lý đặc biệt)
++ function
++ Date object (cần đổi thành string, cần parse lại)
++ Set (objects)
++ Map (objects)
++ Promise (objects)
++ undefined (sẽ tự động bị bỏ qua khi tuần tự hoá)
++ symbol
++ bigInt
++ instance của class tuỳ chỉnh
++ các đối tượng DOM
+
+Quy tắc truyền props từ Server component sang client component
+    Props từ SC sang CC phải alf serial
+
+Pattern phổ biến
+- Lồng CC vào trong SC: cách chuẩn, fetch data từ SC và truyền xuống CC để hiển thị và tương tác
+- Lồng SC vào trong CC: CC nhận SC làm children prop
+- Kinh nghiệm: cố gắng giữ cho component cha là SC càng nhiều càng tốt. Chỉ chuyển các component con
+    cần tương tác thành CC. 
+
+
+Luồng render và tương tác
+
+client bị rerender 
+
+khi nào server component bị rerender
++ route thay đổi (navigate)
++ khi search param thay đổi
++ khi em gọi router.refresh()
++ khi 1 server action được thực hiện thành công
++ trong quá trình revalidate (ISR)
+
+
+Cơ chế thông thường:
+client component: người dùng điền vào form và nhấn submit
+xử lý phía client: dùng quản lý state cho loading, error, data. Bắt sự kiện 
+                    onSubmit và e.preventDefault();
+GỌi API: dùng fetch gọi api đến server để lấy dữ liệu
+Cập nhật lại UI: sau khi fetch data xong thì cập nhật state lại để UI hiển thị
+                    dữ liệu mới nhất từ máy chủ
+
+=> nhược điểm: phát sinh logic tương tự thì phải lặp code lại nhiều nơi (fetch, quản lý state)
+phụ thuộc hoàn toàn vào javascript: Form sẽ không hoạt động nếu javascript bị lỗi hoặc bị tắt
+
+
+
+server actions là gì ?
+- server actions là các hàm js bất đồng bộ được viết và chạy hoàn toàn bên phía server, nhưng có thể được gọi
+trực tiếp từ client component (hoặc server component)
+- cầu nối giữa UI đến logic server
+- client component chỉ cần gọi hàm, còn next sẽ lo phần còn lại (tạo request, gửi request đi, thực thi trên server)
+
+Lợi ích:
+
+Mẹo:
+Server actions = "TÔi muốn thay đổi gì đó (mutation)" (CREATE, UPDATE, DELETE)
+fetch = "Tôi muốn lấy, hiển thị gì đó" (READ, GET)
+
+
+//Data fetching và cache
+
+
+//memoization và data caching với methods fetch
+
+                memoization                 |                  data caching với methods fetch
+Nguồn gốc:    TÍnh năng của react                                  Tính năng của nextjs
+phạm vi:      Trong 1 request render của 1                   Giữa các request (nhiều người dùng)
+                server component                                 hoặc nhiều lần tải trang
+Mục đích:     Tránh gọi API trùng lặp nhiều lần            Giúp server dùng lại dữ liệu đã cache sẵn, 
+                trong 1 lần render                              giảm truy cập nguồn dữ liệu thật
+Thời gian sống:  Tồn tại trong quá trình render             Tồn tại lâu dài cho đến khi mình revalidate hoặc deploy
+
+
+//streaming
+
+//khác biệt cốt lõi giữa loading.js và streaming
+loading.js: Dành cho toàn bộ trang/route
+streaming: dành loading từng phần của trang
+
+revalidateTag: 
+relivate: seconds
+revalidatePath: 
+
+
+
+biến môi trường ở phía server: 
+        server component, server actions. router handlers, generateStaticParams
+        Đặt tên bất kì ví dụ nhyw (DATABASE_URL, STRIPE_SECRET_KEY)
+biến môi trường ở phía client: 
+        cần sử dụng cẩn thận
+        client component 
+        cách đặt tên: Phải có tiền tố NEXT_PUBLIC_ ví dụ NEXT_PUBLIC_API_BASE_URL, ...
+
+
+env
+DATABASE_URL= => biến môi trường server
+NEXT_PUBLIC_DATABASE_URL => hiểu là biến môi trường client
+
+
+
+=> context là về truyền dữ liệu, còn redux là quản lý trạng thái
+
+
+                Redux toolkit                |         Context API
+
+=> khi nào nên sử dụng: 
+
+
+Authenticate
+Authorization
+accessToken: chua thong tin co ban cua user vua login(id,name),
+va tra data ve cho phia FE
+va sau do FE se lua o cookie hoac localstorage 
+sau do nhun glan request sau nguoi dun gphai gui token tren header khi call api de BE co the biet ng dung do da login va user nao dang goi toi server(dua vao userId trong accessToken)

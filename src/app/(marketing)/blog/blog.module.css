@@ -1,0 +1,76 @@
+.container {
+  padding: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.postList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.postCard {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.postTitle {
+  font-size: 1.5rem;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+}
+
+.postDescription {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.postLink {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  align-self: flex-start;
+  transition: all 1s;
+}
+
+.postLink:hover {
+  background-color: #0056b3;
+}
+
+.sectionUser {
+  margin-top: 40px;
+  padding: 0;
+  margin: 0;
+}
+
+.userList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.userItem {
+  background-color: #e9ecef;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  color: #343a40;
+}

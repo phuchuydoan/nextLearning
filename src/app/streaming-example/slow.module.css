@@ -1,0 +1,13 @@
+.slowComponentContainer {
+  border: 1px solid blue;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.slowComponentTitle {
+  color: darkblue;
+}
+
+.slowComponetText {
+  font-style: italic;
+}

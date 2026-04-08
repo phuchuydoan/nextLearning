@@ -1,0 +1,17 @@
+.error-container {
+  padding: 20px;
+  border: 1px solid red;
+  background-color: #ffe0e0;
+}
+
+.retry-button {
+  padding: 10px 15px;
+  background-color: #ff4c4c;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.retry-button:hover {
+  background-color: #cc0000;
+}

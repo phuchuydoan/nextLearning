@@ -1,0 +1,9 @@
+.container {
+  padding: 15px;
+}
+
+.link {
+  color: blue;
+  margin-top: 10px;
+  display: inline-block;
+}
